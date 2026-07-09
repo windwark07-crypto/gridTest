@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     new Tabulator("#serviceGrid", {
         layout: "fitColumns",
+        // height: "400px",
+        width: "1000px",
         columns: [
             { title: "ID", field: "id", width: 80 },
             { title: "Name", field: "name" },
@@ -8,13 +10,21 @@ document.addEventListener("DOMContentLoaded", function () {
             {
                 title: "Gender",
                 field: "gender",
-                cssClass: "gender-cell",
                 editor: "list",
                 editorParams: {
                     values: { M: "Male", F: "Female" },
                 },
-                formatter: "lookup",
-                formatterParams: { M: "Male", F: "Female" },
+                formatter: function (cell) {
+                    var labels = { M: "Male", F: "Female" };
+                    var value = cell.getValue();
+                    var label = labels[value] || value || "";
+                    return (
+                        '<span class="gender-cell-inner">' +
+                        "<span>" + label + "</span>" +
+                        '<span class="gender-arrow">▼</span>' +
+                        "</span>"
+                    );
+                },
             },
         ],
         data: [

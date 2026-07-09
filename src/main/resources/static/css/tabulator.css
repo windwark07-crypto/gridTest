@@ -1362,4 +1362,17 @@ body.tabulator-print-fullscreen-hide > *:not(.tabulator-print-fullscreen) {
   width: 7px;
   background: #333;
 }
+
+.gender-cell-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.gender-cell-inner .gender-arrow {
+  font-size: 10px;
+  color: #666;
+  margin-left: 6px;
+}
 /*# sourceMappingURL=tabulator.css.map */
