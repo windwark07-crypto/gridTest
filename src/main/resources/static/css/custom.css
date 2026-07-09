@@ -1,0 +1,15 @@
+.gender-cell {
+    position: relative;
+    padding-right: 20px !important;
+}
+
+.gender-cell::after {
+    content: "\25BC";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: #666;
+    pointer-events: none;
+}

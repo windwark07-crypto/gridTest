@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>gridTest</title>
+    <link th:href="@{/css/tabulator.css}" rel="stylesheet">
+    <link th:href="@{/css/custom.css}" rel="stylesheet">
+    <script src="https://unpkg.com/tabulator-tables@6.5.0/dist/js/tabulator.min.js"></script>
+</head>
+<body>
+    <h1 th:text="${message}">기본 메시지</h1>
+    <div id="serviceGrid"></div>
+    <script th:src="@{/js/index.js}"></script>
+</body>
+</html>
