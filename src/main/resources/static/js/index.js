@@ -1,9 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
-    new Tabulator("#serviceGrid", {
+    const table = new Tabulator("#serviceGrid", {
         layout: "fitColumns",
         // height: "400px",
         width: "1000px",
         selectableRows: true,
+        // 표준 에디터(Age·MEMO·Gender 등) 편집 시 수정 상태 마킹
+        cellEdited: function (cell) {
+            GridUtil.markState(cell.getRow(), "modified");
+        },
         columns: [
             {
                 formatter: "rowSelection",
@@ -60,5 +64,34 @@ document.addEventListener("DOMContentLoaded", function () {
             { id: 2, name: "Bob", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
             { id: 3, name: "Carol", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
         ],
+    });
+
+    // ── 툴바 버튼 ──────────────────────────────────────────────
+    // 행 추가 (_state = "new")
+    document.getElementById("btnAddRow").addEventListener("click", function () {
+        GridUtil.addRow(table, { name: "", age: 0, memo: "", status: "", gender: "01", use: false });
+    });
+
+    // 선택 행 삭제 (_state = "deleted", 삭제분은 별도 보관)
+    document.getElementById("btnDeleteRow").addEventListener("click", function () {
+        const rows = table.getSelectedRows();
+        if (rows.length === 0) {
+            alert("삭제할 행을 선택하세요.");
+            return;
+        }
+        rows.forEach(function (row) {
+            GridUtil.deleteRow(row);
+        });
+    });
+
+    // 변경분 저장 (서버 전송 대신 콘솔 출력으로 확인)
+    document.getElementById("btnSave").addEventListener("click", function () {
+        const changes = GridUtil.getChanges(table);
+        console.log("신규+수정:", changes.upserts);
+        console.log("삭제:", changes.deletes);
+        console.log("서버 전송 대상(all):", changes.all);
+        alert("변경 " + changes.all.length + "건 (신규/수정 " + changes.upserts.length + ", 삭제 " + changes.deletes.length + ")\n콘솔에서 상세 확인");
+        // 실제로는 여기서 changes.all 을 서버로 전송하고,
+        // 성공 시 GridUtil.clearState(table); 호출
     });
 });
