@@ -3,7 +3,16 @@ document.addEventListener("DOMContentLoaded", function () {
         layout: "fitColumns",
         // height: "400px",
         width: "1000px",
+        selectableRows: true,
         columns: [
+            {
+                formatter: "rowSelection",
+                titleFormatter: "rowSelection",
+                hozAlign: "center",
+                headerHozAlign: "center",
+                headerSort: false,
+                width: 40
+            },
             { title: "ID", field: "id", width: 80 },
             { title: "Name", field: "name" },
             { title: "Status", field: "status" },
@@ -12,25 +21,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 field: "gender",
                 editor: "list",
                 editorParams: {
-                    values: { M: "Male", F: "Female" },
+                    values: {'01':'카카오', '02':'네이버'}
                 },
-                formatter: function (cell) {
-                    var labels = { M: "Male", F: "Female" };
-                    var value = cell.getValue();
-                    var label = labels[value] || value || "";
-                    return (
-                        '<span class="gender-cell-inner">' +
-                        "<span>" + label + "</span>" +
-                        '<span class="gender-arrow">▼</span>' +
-                        "</span>"
-                    );
-                },
+                formatter:'lookup',
+                formatterParams: {'01':'카카오', '02':'네이버'}
+            },
+            {
+                title: "사용여부",
+                field: "use",
+                formatter: "tickCross",
+                editor: "rowSelection",
+                hozAlign: "center",
+                width: 100
             },
         ],
         data: [
-            { id: 1, name: "Alice", status: "Active", gender: "F" },
-            { id: 2, name: "Bob", status: "Inactive", gender: "M" },
-            { id: 3, name: "Carol", status: "Active", gender: "F" },
+            { id: 1, name: "Alice", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", status: "Active", gender: "02", use: true },
         ],
     });
 });
