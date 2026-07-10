@@ -45,6 +45,33 @@ Tabulator.extendModule("format", "formatters", {
         });
 
         return btn;
+    },
+
+    // 셀 값을 색상 뱃지(태그)로 표시하는 공통 formatter
+    // 컬럼 정의 예:
+    //   formatter: "tag",
+    //   formatterParams: {
+    //     colors: { Active: "#2DC214", Inactive: "#999" }, // 값별 배경색
+    //     labels: { Active: "사용중" },                      // (선택) 표시 텍스트 치환
+    //     defaultColor: "#999"                               // (선택) 미매칭 시 색
+    //   }
+    tag: function (cell, formatterParams, onRendered) {
+        const params = formatterParams || {};
+        const value = cell.getValue();
+        if (value === null || value === undefined || value === "") return "";
+
+        const colors = params.colors || {};
+        const labels = params.labels || {};
+        const span = document.createElement("span");
+        span.className = "grid-tag";
+        span.textContent = labels[value] || value;
+        span.style.backgroundColor = colors[value] || params.defaultColor || "#999";
+
+        // 컬럼에 hozAlign을 지정하지 않아도 항상 가운데 정렬되도록 래퍼로 감쌈
+        const wrap = document.createElement("div");
+        wrap.style.textAlign = "center";
+        wrap.appendChild(span);
+        return wrap;
     }
 });
 
@@ -60,6 +87,32 @@ Tabulator.extendModule("format", "formatters", {
  * 삭제된 row는 grid.getData()에 잡히지 않으므로 table 인스턴스에 별도 보관한다.
  */
 window.GridUtil = {
+    // formatter별 컬럼 기본 옵션.
+    // 컬럼 정의에 해당 옵션을 명시하지 않은 경우에만 자동 주입된다.
+    _formatterDefaults: {
+        image: { headerSort: false },
+        button: { headerSort: false },
+        checkbox: { headerSort: false }
+    },
+
+    /**
+     * 컬럼 정의 배열을 전처리해 formatter별 기본 옵션을 자동 적용한다.
+     * 사용: columns: GridUtil.columns([ ... ])
+     * 컬럼에 옵션을 직접 지정하면 그 값이 우선한다.
+     */
+    columns: function (defs) {
+        const defaults = this._formatterDefaults;
+        return (defs || []).map(function (def) {
+            const preset = defaults[def.formatter];
+            if (preset) {
+                Object.keys(preset).forEach(function (key) {
+                    if (!(key in def)) def[key] = preset[key];
+                });
+            }
+            return def;
+        });
+    },
+
     /**
      * row에 변경 상태를 마킹한다.
      * 'new' 상태는 계속 INSERT 대상이어야 하므로 'modified'로 덮지 않는다.
