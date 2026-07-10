@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cellEdited: function (cell) {
             GridUtil.markState(cell.getRow(), "modified");
         },
-        columns: [
+        columns: GridUtil.columns([
             {
                 formatter: "rowSelection",
                 titleFormatter: "rowSelection",
@@ -18,10 +18,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 width: 40
             },
             { title: "ID", field: "id", width: 80 },
+            {
+                title: "사진",
+                field: "photo",
+                hozAlign: "center",
+                width: 70,
+                formatter: "image",
+                formatterParams: { height: "32px", width: "32px" }
+            },
             { title: "Name", field: "name" },
             { title: "Age", field: "age", editor: "number", editorParams: { min: 0, max: 150 } },
             { title: "MEMO", field: "memo", editor: "input", cssClass: "editable-input" },
-            { title: "Status", field: "status" },
+            {
+                title: "Status",
+                field: "status",
+                formatter: "tag",
+                formatterParams: {
+                    colors: { Active: "#2DC214", Inactive: "#CE1515" },
+                    labels: { Active: "사용중", Inactive: "미사용" }
+                }
+            },
             {
                 title: "Gender",
                 field: "gender",
@@ -58,11 +74,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 }
             },
-        ],
+        ]),
         data: [
-            { id: 1, name: "Alice", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
-            { id: 2, name: "Bob", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
-            { id: 3, name: "Carol", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
         ],
     });
 
