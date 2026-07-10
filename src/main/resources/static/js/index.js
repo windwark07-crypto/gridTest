@@ -66,12 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 formatter: "button",
                 formatterParams: {
                     label: "상세",
-                    onClick: function (e, cell) {
-                        const rowData = cell.getRow().getData();
-                        // TODO: 상세 화면 이동 등 실제 로직으로 교체
-                        console.log("상세 클릭:", rowData);
-                        alert("상세 보기 - ID: " + rowData.id + ", 이름: " + rowData.name);
-                    }
+                    onClick: onDetailClick
                 }
             },
         ]),
@@ -111,3 +106,11 @@ document.addEventListener("DOMContentLoaded", function () {
         // 성공 시 GridUtil.clearState(table); 호출
     });
 });
+
+// 상세 버튼 클릭 이벤트 처리
+function onDetailClick(e, cell) {
+    const rowData = cell.getRow().getData();
+    // TODO: 상세 화면 이동 등 실제 로직으로 교체
+    console.log("상세 클릭:", rowData);
+    alert("상세 보기 - ID: " + rowData.id + ", 이름: " + rowData.name);
+}
