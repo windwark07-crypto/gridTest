@@ -1,19 +1,20 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const table = new Tabulator("#serviceGrid", {
+    const CommonGrid = window.common.CommonGrid;
+
+    const table = CommonGrid.create("serviceGrid", {
         layout: "fitColumns",
         // height: "400px",
         width: "1000px",
         selectableRows: true,
-        // 표준 에디터(Age·MEMO·Gender 등) 편집 시 수정 상태 마킹
-        cellEdited: function (cell) {
-            GridUtil.markState(cell.getRow(), "modified");
+        // 모든 컬럼 헤더를 기본 가운데 정렬
+        columnDefaults: {
+            headerHozAlign: "center"
         },
-        columns: GridUtil.columns([
+        columns: CommonGrid.columns([
             {
                 formatter: "rowSelection",
                 titleFormatter: "rowSelection",
                 hozAlign: "center",
-                headerHozAlign: "center",
                 headerSort: false,
                 width: 40
             },
@@ -60,7 +61,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 title: "상세",
                 field: "detail",
                 hozAlign: "center",
-                headerHozAlign: "center",
                 headerSort: false,
                 width: 80,
                 formatter: "button",
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ── 툴바 버튼 ──────────────────────────────────────────────
     // 행 추가 (_state = "new")
     document.getElementById("btnAddRow").addEventListener("click", function () {
-        GridUtil.addRow(table, { name: "", age: 0, memo: "", status: "", gender: "01", use: false });
+        CommonGrid.addRow(table, { name: "", age: 0, memo: "", status: "", gender: "01", use: false });
     });
 
     // 선택 행 삭제 (_state = "deleted", 삭제분은 별도 보관)
@@ -91,19 +91,19 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         rows.forEach(function (row) {
-            GridUtil.deleteRow(row);
+            CommonGrid.deleteRow(row);
         });
     });
 
     // 변경분 저장 (서버 전송 대신 콘솔 출력으로 확인)
     document.getElementById("btnSave").addEventListener("click", function () {
-        const changes = GridUtil.getChanges(table);
+        const changes = CommonGrid.getChanges(table);
         console.log("신규+수정:", changes.upserts);
         console.log("삭제:", changes.deletes);
         console.log("서버 전송 대상(all):", changes.all);
         alert("변경 " + changes.all.length + "건 (신규/수정 " + changes.upserts.length + ", 삭제 " + changes.deletes.length + ")\n콘솔에서 상세 확인");
         // 실제로는 여기서 changes.all 을 서버로 전송하고,
-        // 성공 시 GridUtil.clearState(table); 호출
+        // 성공 시 CommonGrid.clearState(table); 호출
     });
 });
 

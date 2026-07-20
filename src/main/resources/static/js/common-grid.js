@@ -66,7 +66,7 @@ Tabulator.extendModule("format", "formatters", {
         span.className = "grid-tag";
         span.textContent = labels[value] || value;
         span.style.backgroundColor = colors[value] || params.defaultColor || "#999";
-
+        console.log("span : ", span);
         // 컬럼에 hozAlign을 지정하지 않아도 항상 가운데 정렬되도록 래퍼로 감쌈
         const wrap = document.createElement("div");
         wrap.style.textAlign = "center";

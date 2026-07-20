@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>인증 대시보드 차트 예제</title>
+<!-- 공통 차트 번들 (grid/chart.js → window.common.CommonChart) -->
+<script type="module" th:src="@{/js/lib/chart.min.js}"></script>
+<script nomodule th:src="@{/js/lib/polyfills-legacy.min.js}"></script>
+<script nomodule th:src="@{/js/lib/chart-legacy.min.js}"></script>
+<style>
+  :root{
+    --fail: #f6b3ae;
+    --success: #a9b6f2;
+    --fail-active: #e2372b;
+    --success-active: #3f5be0;
+    --text-main: #1c1c1e;
+    --text-sub: #8a8a8f;
+    --border: #eee;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family: -apple-system, "Pretendard", "Malgun Gothic", sans-serif;
+    background:#f5f6f8;
+    margin:0;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    align-items:center;
+  }
+  .card{
+    background:#fff;
+    border-radius:16px;
+    padding:24px 28px;
+    width:640px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.05);
+  }
+  .card-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:20px;
+  }
+  .card-title{
+    font-size:16px;
+    font-weight:700;
+    color:var(--text-main);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .card-title .badge{
+    font-size:13px;
+    font-weight:600;
+    color:#3f5be0;
+  }
+  .card-sub{
+    font-size:12px;
+    color:var(--text-sub);
+  }
+  .chart-wrap{ position:relative; height:220px; }
+  .footer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:10px;
+    font-size:12px;
+    color:var(--text-sub);
+  }
+  .legend{ display:flex; gap:14px; }
+  .legend span{ display:flex; align-items:center; gap:5px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+
+  /* ---- Segmented bar card ---- */
+  .seg-bar{
+    display:flex;
+    width:100%;
+    height:14px;
+    border-radius:8px;
+    overflow:hidden;
+    margin-bottom:20px;
+  }
+  .seg-bar div{ height:100%; }
+  .seg-list{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap:14px;
+    column-gap:24px;
+  }
+  .seg-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:13px;
+    color:var(--text-main);
+  }
+  .seg-item .label{ display:flex; align-items:center; gap:7px; }
+  .seg-item .value{ color:var(--text-sub); }
+</style>
+</head>
+<body>
+
+<!-- Chart 1: 시간대별 인증이용량 추이 (Stacked Bar) -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">시간대별 인증이용량 추이 <span class="badge">즉시결제 ▾</span></div>
+    <div class="card-sub">07.07 02:00 ~ 07.07 14:00 기준</div>
+  </div>
+  <div class="chart-wrap">
+    <canvas id="stackedChart"></canvas>
+  </div>
+  <div class="footer-row">
+    <span>오늘 (07.06)</span>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--fail-active)"></span>실패</span>
+      <span><span class="dot" style="background:var(--success-active)"></span>성공</span>
+    </div>
+  </div>
+</div>
+
+<!-- Chart 2: 일간 인증수단별 이용량 (Segmented bar) -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">일간 인증수단별 이용량</div>
+    <div class="card-sub">07.07 기준</div>
+  </div>
+  <div style="position:relative; height:100px; margin-bottom:20px;">
+    <canvas id="segChart"></canvas>
+  </div>
+  <div class="seg-list" id="segList"></div>
+</div>
+
+<script>
+// 공통 차트 번들(module)은 defer 실행이므로, DOMContentLoaded 이후에 사용해야 함
+document.addEventListener("DOMContentLoaded", function () {
+/* ============ Chart 1: Stacked bar with Chart.js ============ */
+const hours = ["02:00","03:00","04:00","05:00","06:00","07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00"];
+const failData    = [320,300,260,250,340,360,350,330,290,310,330,780,340];
+const successData = [1400,1350,1050,1000,1500,1580,1520,1470,1250,1360,1470,2420,1560];
+const selectedIndex = 11; // 13:00 highlighted, matches tooltip example
+
+// CSS 변수를 한 번만 읽어오는 헬퍼 (색은 :root 에서 단일 관리)
+const css = getComputedStyle(document.documentElement);
+const c = (name) => css.getPropertyValue(name).trim();
+
+common.CommonChart.create('stackedChart', {
+  type: 'bar',
+  data: {
+    labels: hours,
+    datasets: [
+      {
+        label: '실패', data: failData, borderRadius: 0, barPercentage:0.55,
+        // 각 막대를 그릴 때 dataIndex로 강조 여부 판단 (scriptable 옵션)
+        // backgroundColor: (ctx) => c(ctx.dataIndex === selectedIndex ? '--fail-active' : '--fail')
+        backgroundColor: "#e2372b"
+      },
+      {
+        label: '성공', data: successData, borderRadius: 6, barPercentage:0.55,
+        // backgroundColor: (ctx) => c(ctx.dataIndex === selectedIndex ? '--success-active' : '--success')
+        backgroundColor: "#3f5be0"
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: { stacked: true, grid: { display:false }, ticks:{ color:'#8a8a8f', font:{size:11} } },
+      y: { stacked: true, display:false }
+    },
+    plugins: {
+      legend: { display:false },
+      tooltip: {
+        backgroundColor:'#fff',
+        titleColor:'#1c1c1e',
+        bodyColor:'#1c1c1e',
+        borderColor:'#eee',
+        borderWidth:1,
+        padding:10,
+        displayColors:true,
+        callbacks: {
+          title: (items) => `전체 인증 ${ (failData[items[0].dataIndex] + successData[items[0].dataIndex]).toLocaleString() }건`,
+          label: (item) => `${item.dataset.label}  ${item.raw.toLocaleString()}건`
+        }
+      }
+    }
+  }
+});
+
+/* ============ Chart 2: Segmented bar, pure vanilla JS ============ */
+const segData = [
+  { name:'SOL페이',    value:15678, color:'#5b6bf0' },
+  { name:'카드인증',   value:8974,  color:'#26c6da' },
+  { name:'금융인증서', value:2230,  color:'#c9b8f5' },
+  { name:'사설인증서', value:1808,  color:'#26a69a' },
+  { name:'신한인증서', value:1678,  color:'#3fbf5f' },
+  { name:'휴대폰인증', value:978,   color:'#ec6cab' }
+];
+const total = segData.reduce((s, d)=>s+d.value,0);
+
+// 툴팁 positioner 'segMiddle' 은 공통 모듈(grid/chart.js)에 등록되어 있음
+const lastIdx = segData.length - 1;
+common.CommonChart.create('segChart', {
+  type: 'bar',
+  data: {
+    labels: [''], // 막대 1개(단일 카테고리)에 각 인증수단이 세그먼트로 쌓임
+    datasets: segData.map((d, i) => ({
+      label: d.name,
+      data: [d.value],
+      backgroundColor: d.color,
+      barThickness: 28,
+      borderSkipped: false,
+      // 전체 막대 양 끝만 둥글게 (첫 세그먼트=왼쪽, 마지막 세그먼트=오른쪽)
+      borderRadius:
+        i === 0        ? { topLeft: 14, bottomLeft: 14 } :
+        i === lastIdx  ? { topRight: 14, bottomRight: 14 } :
+        0
+    }))
+  },
+  options: {
+    indexAxis: 'y',            // 가로 막대
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: { padding: 0 },
+    scales: {
+      x: { stacked: true, display: false, max: total }, // total로 폭 100% 고정
+      y: { stacked: true, display: false }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor:'#fff',
+        titleColor:'#1c1c1e',
+        bodyColor:'#1c1c1e',
+        borderColor:'#eee',
+        borderWidth:1,
+        padding:10,
+        position: 'segMiddle', // 세그먼트 가로 정중앙에 앵커
+        xAlign: 'center',    // 앵커 기준 가운데 정렬 (한쪽으로 쏠림 방지)
+        yAlign: 'bottom',    // 툴팁을 막대 위쪽에 표시 (겹침 방지)
+        caretPadding: 8,     // 막대와 툴팁 사이 간격
+        callbacks: {
+          label: (item) => {
+            const pct = (item.raw / total * 100).toFixed(1);
+            return `${item.dataset.label}  ${item.raw.toLocaleString()}건 (${pct}%)`;
+          }
+        }
+      }
+    }
+  }
+});
+
+const segList = document.getElementById('segList');
+segData.forEach(d => {
+  const pct = Math.round(d.value/total*100);
+  const item = document.createElement('div');
+  item.className = 'seg-item';
+  item.innerHTML = `
+    <span class="label"><span class="dot" style="background:${d.color}"></span>${d.name} <b>${pct}%</b></span>
+    <span class="value">${d.value.toLocaleString()} 건</span>
+  `;
+  segList.appendChild(item);
+});
+});
+</script>
+</body>
+</html>

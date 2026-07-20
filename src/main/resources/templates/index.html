@@ -3,17 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>gridTest</title>
-    <link th:href="@{/css/tabulator.css}" rel="stylesheet">
-    <!-- <script src="https://unpkg.com/tabulator-tables@6.5.0/dist/js/tabulator.min.js"></script> -->
-    <!-- <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet"> -->
-    <!-- <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script> -->
-    
+
+    <!-- Tabulator CSS (JS는 grid.min.js 번들에 포함) -->
+    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
     <link th:href="@{/css/common.css}" rel="stylesheet">
-    <script type="module" th:src="@{/js/lib/grid.min.js}"></script>
 </head>
 <body>
     <h1 th:text="${message}">기본 메시지</h1>
+    <div style="margin-bottom: 8px;">
+        <button type="button" id="btnAddRow" class="grid-btn">행 추가</button>
+        <button type="button" id="btnDeleteRow" class="grid-btn">선택 삭제</button>
+        <button type="button" id="btnSave" class="grid-btn">변경분 저장</button>
+    </div>
     <div id="serviceGrid" style="height: 500px;"></div>
+
+    <!-- 공통 그리드 번들 (grid2.js → window.common.CommonGrid) -->
+    <script type="module" th:src="@{/js/lib/grid.min.js}"></script>
+    <script nomodule th:src="@{/js/lib/polyfills-legacy.min.js}"></script>
+    <script nomodule th:src="@{/js/lib/grid-legacy.min.js}"></script>
+
     <script th:src="@{/js/index.js}"></script>
 </body>
 </html>
