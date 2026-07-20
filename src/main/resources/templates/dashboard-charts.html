@@ -58,7 +58,8 @@
     font-size:12px;
     color:var(--text-sub);
   }
-  .chart-wrap{ position:relative; height:220px; }
+  /* 래퍼 없이 canvas 단독 사용 (크기는 canvas width/height 속성으로 지정) */
+  #stackedChart{ display:block; }
   .footer-row{
     display:flex;
     justify-content:space-between;
@@ -81,6 +82,8 @@
     margin-bottom:20px;
   }
   .seg-bar div{ height:100%; }
+  /* 래퍼 없이 canvas 단독 사용 (크기는 canvas width/height 속성으로 지정) */
+  #segChart{ display:block; margin-bottom:20px; }
   .seg-list{
     display:grid;
     grid-template-columns: 1fr 1fr;
@@ -106,9 +109,7 @@
     <div class="card-title">시간대별 인증이용량 추이 <span class="badge">즉시결제 ▾</span></div>
     <div class="card-sub">07.07 02:00 ~ 07.07 14:00 기준</div>
   </div>
-  <div class="chart-wrap">
-    <canvas id="stackedChart"></canvas>
-  </div>
+  <canvas id="stackedChart" width="584" height="220"></canvas>
   <div class="footer-row">
     <span>오늘 (07.06)</span>
     <div class="legend">
@@ -124,9 +125,7 @@
     <div class="card-title">일간 인증수단별 이용량</div>
     <div class="card-sub">07.07 기준</div>
   </div>
-  <div style="position:relative; height:100px; margin-bottom:20px;">
-    <canvas id="segChart"></canvas>
-  </div>
+  <canvas id="segChart" width="584" height="100"></canvas>
   <div class="seg-list" id="segList"></div>
 </div>
 
@@ -162,8 +161,8 @@ common.CommonChart.create('stackedChart', {
     ]
   },
   options: {
-    responsive: true,
-    maintainAspectRatio: false,
+    // 크기는 canvas의 width/height 속성(584x220)을 그대로 사용
+    responsive: false,
     scales: {
       x: { stacked: true, grid: { display:false }, ticks:{ color:'#8a8a8f', font:{size:11} } },
       y: { stacked: true, display:false }
@@ -219,8 +218,8 @@ common.CommonChart.create('segChart', {
   },
   options: {
     indexAxis: 'y',            // 가로 막대
-    responsive: true,
-    maintainAspectRatio: false,
+    // 크기는 canvas의 width/height 속성(584x100)을 그대로 사용
+    responsive: false,
     layout: { padding: 0 },
     scales: {
       x: { stacked: true, display: false, max: total }, // total로 폭 100% 고정
