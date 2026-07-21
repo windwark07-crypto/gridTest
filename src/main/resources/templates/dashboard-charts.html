@@ -177,6 +177,10 @@ common.CommonChart.create('stackedChart', {
         borderWidth:1,
         padding:10,
         displayColors:true,
+        position: 'barTop',  // 막대 최상단에 앵커 (공통 모듈에 등록)
+        xAlign: 'center',    // 막대 가로 중앙 정렬
+        yAlign: 'bottom',    // 툴팁을 앵커 위쪽에 표시
+        caretPadding: 6,     // 막대와 툴팁 사이 간격
         callbacks: {
           title: (items) => `전체 인증 ${ (failData[items[0].dataIndex] + successData[items[0].dataIndex]).toLocaleString() }건`,
           label: (item) => `${item.dataset.label}  ${item.raw.toLocaleString()}건`
