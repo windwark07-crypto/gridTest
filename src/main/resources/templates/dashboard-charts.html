@@ -163,6 +163,8 @@ common.CommonChart.create('stackedChart', {
   options: {
     // 크기는 canvas의 width/height 속성(584x220)을 그대로 사용
     responsive: false,
+    // 같은 시간대의 실패·성공을 하나의 툴팁에 함께 표시
+    interaction: { mode: 'index', intersect: false },
     scales: {
       x: { stacked: true, grid: { display:false }, ticks:{ color:'#8a8a8f', font:{size:11} } },
       y: { stacked: true, display:false }
@@ -177,6 +179,7 @@ common.CommonChart.create('stackedChart', {
         borderWidth:1,
         padding:10,
         displayColors:true,
+        reverse: true,       // 툴팁 항목 순서 반전 (성공 -> 실패)
         position: 'barTop',  // 막대 최상단에 앵커 (공통 모듈에 등록)
         xAlign: 'center',    // 막대 가로 중앙 정렬
         yAlign: 'bottom',    // 툴팁을 앵커 위쪽에 표시
