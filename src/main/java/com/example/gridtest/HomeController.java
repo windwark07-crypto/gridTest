@@ -17,4 +17,9 @@ public class HomeController {
     public String dashboardCharts(Model model) {
         return "dashboard-charts";
     }
+
+    @GetMapping("/line-chart")
+    public String lineChart(Model model) {
+        return "line-chart";
+    }
 }

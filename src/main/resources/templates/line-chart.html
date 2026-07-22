@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>시간대별 인증이용량 추이 (Line)</title>
+<!-- 공통 차트 번들 (grid/chart.js → window.common.CommonChart) -->
+<script type="module" th:src="@{/js/lib/chart.min.js}"></script>
+<script nomodule th:src="@{/js/lib/polyfills-legacy.min.js}"></script>
+<script nomodule th:src="@{/js/lib/chart-legacy.min.js}"></script>
+<style>
+  :root{
+    --fail: #f6b3ae;
+    --success: #a9b6f2;
+    --fail-active: #e2372b;
+    --success-active: #3f5be0;
+    --text-main: #1c1c1e;
+    --text-sub: #8a8a8f;
+    --border: #eee;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family: -apple-system, "Pretendard", "Malgun Gothic", sans-serif;
+    background:#f5f6f8;
+    margin:0;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    align-items:center;
+  }
+  .card{
+    background:#fff;
+    border-radius:16px;
+    padding:24px 28px;
+    width:640px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.05);
+  }
+  /* 래퍼 없이 canvas 단독 사용 (크기는 canvas width/height 속성으로 지정) */
+  #lineChart{ display:block; }
+  .footer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:10px;
+    font-size:12px;
+    color:var(--text-sub);
+  }
+  .legend{ display:flex; gap:14px; }
+  .legend span{ display:flex; align-items:center; gap:5px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+</style>
+</head>
+<body>
+
+<!-- 시간대별 인증이용량 추이 (Line Chart) -->
+<div class="card">
+  <canvas id="lineChart" width="584" height="220"></canvas>
+  <div class="footer-row">
+    <span>오늘 (07.06)</span>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--fail-active)"></span>실패</span>
+      <span><span class="dot" style="background:var(--success-active)"></span>성공</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// 공통 차트 번들(module)은 defer 실행이므로, DOMContentLoaded 이후에 사용해야 함
+document.addEventListener("DOMContentLoaded", function () {
+
+/* ── 조회 설정 ─────────────────────────────────────────────
+ * 최대 2시간 구간을 5분 또는 10분 단위로 분할해 표시한다.
+ *   10분 단위 -> 13개 지점 / 5분 단위 -> 25개 지점
+ * INTERVAL_MIN 만 바꾸면 라벨·데이터·눈금이 모두 따라간다.
+ * ────────────────────────────────────────────────────────── */
+const START_TIME   = '13:00'; // 조회 시작 시각
+const DURATION_MIN = 120;     // 조회 구간 (최대 2시간)
+const INTERVAL_MIN = 5;      // 분할 단위 (5 또는 10)
+
+// 시작 시각부터 durationMin 동안 intervalMin 간격의 "HH:MM" 라벨 생성
+function makeTimeLabels(startTime, intervalMin, durationMin) {
+  const [h, m] = startTime.split(':').map(Number);
+  const start = h * 60 + m;
+  const labels = [];
+  for (let t = start; t <= start + durationMin; t += intervalMin) {
+    const hh = String(Math.floor(t / 60) % 24).padStart(2, '0');
+    const mm = String(t % 60).padStart(2, '0');
+    labels.push(`${hh}:${mm}`);
+  }
+  return labels;
+}
+
+/* 샘플 데이터 — 실제로는 서버 조회 결과로 대체
+ * 인증 요청의 성공/실패 추이.
+ *   - 전체 요청 건수는 트래픽에 따라 구간마다 변동한다 (고정값 아님)
+ *   - 평상시 성공률은 99% 내외를 유지한다
+ *   - 인증기관(구글 OAuth 등) 장애 시 실패율이 오르며 성공률이 하락한다
+ *   - 전체 = 성공 + 실패 이므로, 실패가 오른 만큼 성공이 줄어든다 */
+
+// 구간별 전체 요청 건수 (트래픽 변동)
+const totalData = [
+  1820, 1760, 1900, 1850, 2010, 1980, 1930, 2080, 2150, 2040, 1990, 2110, 2060,
+  1970, 2020, 1950, 1880, 1910, 1840, 1790, 1860, 1820, 1770, 1730, 1700
+];
+
+// 성공률: 평시 99% 내외 -> 13:55~14:25 인증기관 장애로 급락 후 회복
+const successRate = [
+  0.992, 0.994, 0.991, 0.993, 0.990, 0.992, 0.995, 0.991, 0.993, 0.992, 0.990,
+  0.930, 0.610, 0.420, 0.380, 0.540, 0.780, 0.940,   // <- 장애 구간
+  0.988, 0.991, 0.993, 0.992, 0.994, 0.991, 0.993
+];
+
+const successData = totalData.map((t, i) => Math.round(t * successRate[i]));
+const failData    = totalData.map((t, i) => t - successData[i]); // 나머지가 실패
+
+// 데이터 개수만큼 시간 라벨 생성 (최대 DURATION_MIN 범위 내)
+const spanMin = Math.min((failData.length - 1) * INTERVAL_MIN, DURATION_MIN);
+const hours = makeTimeLabels(START_TIME, INTERVAL_MIN, spanMin);
+
+// CSS 변수를 한 번만 읽어오는 헬퍼 (색은 :root 에서 단일 관리)
+const css = getComputedStyle(document.documentElement);
+const c = (name) => css.getPropertyValue(name).trim();
+
+common.CommonChart.create('lineChart', {
+  type: 'line',
+  data: {
+    labels: hours,
+    datasets: [
+      {
+        label: '실패',
+        data: failData,
+        borderColor: c('--fail-active'),
+        backgroundColor: c('--fail-active'),
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 5
+      },
+      {
+        label: '성공',
+        data: successData,
+        borderColor: c('--success-active'),
+        backgroundColor: c('--success-active'),
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 5
+      }
+    ]
+  },
+  options: {
+    // 크기는 canvas의 width/height 속성(584x220)을 그대로 사용
+    responsive: false,
+    // 같은 시간대의 실패·성공을 하나의 툴팁에 함께 표시
+    interaction: { mode: 'index', intersect: false },
+    scales: {
+      x: {
+        grid: { display:false },
+        ticks:{
+          color:'#8a8a8f',
+          font:{size:11},
+          autoSkip: true,      // 5분 단위(25개)일 때 라벨 겹침 방지
+          maxTicksLimit: 13,
+          maxRotation: 0
+        }
+      },
+      y: {
+        beginAtZero: true,
+        border: { display:false },
+        grid: { color:'#f0f0f2' },
+        ticks:{
+          color:'#8a8a8f',
+          font:{size:11},
+          maxTicksLimit: 5,
+          callback: (v) => v.toLocaleString()
+        }
+      }
+    },
+    plugins: {
+      legend: { display:false },
+      tooltip: {
+        backgroundColor:'#fff',
+        titleColor:'#1c1c1e',
+        bodyColor:'#1c1c1e',
+        borderColor:'#eee',
+        borderWidth:1,
+        padding:10,
+        displayColors:true,
+        reverse: true,       // 툴팁 항목 순서 반전 (성공 -> 실패)
+        position: 'nearest',
+        xAlign: 'center',
+        yAlign: 'bottom',    // 툴팁을 지점 위쪽에 표시
+        caretPadding: 6,
+        callbacks: {
+          title: (items) => `전체 인증 ${ (failData[items[0].dataIndex] + successData[items[0].dataIndex]).toLocaleString() }건`,
+          label: (item) => `${item.dataset.label}  ${item.raw.toLocaleString()}건`
+        }
+      }
+    }
+  }
+});
+
+});
+</script>
+</body>
+</html>
