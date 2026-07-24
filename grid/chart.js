@@ -12,8 +12,8 @@ Tooltip.positioners.segMiddle = function (elements) {
   return { x: (el.x + el.base) / 2, y: el.y };
 };
 
-// 세로 막대에서 툴팁을 막대 "바로 위"에 앵커
-// (활성 요소 중 가장 위쪽 y = 스택 최상단, x = 막대 가로 중앙)
+// 툴팁을 해당 항목 "바로 위"에 앵커 (세로 막대 / line 차트 공용)
+// 활성 요소 중 가장 위쪽 y 를 찾으므로, 여러 dataset이 겹쳐도 최상단 위에 표시된다.
 // 사용: options.plugins.tooltip.position = 'barTop'
 Tooltip.positioners.barTop = function (elements) {
   if (!elements.length) return false;
