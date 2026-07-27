@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const CommonGrid = window.common.CommonGrid;
 
     const table = CommonGrid.create("serviceGrid", {
+        pagination:true,
         layout: "fitColumns",
         // height: "400px",
         width: "1000px",
