@@ -87,16 +87,17 @@ window.common.CommonGrid = {
     instances[elementId]?.destroy();
 
     const table = new Tabulator('#' + elementId, {
-      paginationSize: 10,
-      paginationSizeSelector: [10, 30, 100],
+      paginationSize: 100,                    // 페이지당 행 수 (기본 선택 = 100)
+      paginationSizeSelector: [50, 100, 200], // 오른쪽 크기 선택 드롭다운 (50/100/200)
+      paginationButtonCount: 5,               // 가운데 페이지 번호 버튼 개수 (1 2 3 4 5)
       locale: "ko-kr",
       langs: {
         "ko-kr": {
           "pagination": {
-            "first": "<<",
-            "last": ">>",
-            "prev": "<",
-            "nest": "<"
+            "first": "<<",   // 처음 (숨기려면 CSS)
+            "last": ">>",    // 마지막 (숨기려면 CSS)
+            "prev": "<",     // 이전
+            "next": ">"      // 다음
           }
         }
       },
@@ -107,6 +108,16 @@ window.common.CommonGrid = {
     // ※ Tabulator 6.x에서는 생성자 옵션이 아닌 이벤트(table.on)로 등록해야 동작함
     table.on("cellEdited", function (cell) {
       window.common.CommonGrid.markState(cell.getRow(), "modified");
+    });
+
+    // 페이지 크기 선택 드롭다운의 각 옵션에 "건" 접미사 표시 (value 는 유지)
+    // 예: 100 -> "100 건"  (setPageSize 는 value 기준이라 동작 영향 없음)
+    table.on("tableBuilt", function () {
+      table.element
+        .querySelectorAll(".tabulator-page-size option")
+        .forEach(function (opt) {
+          opt.textContent = Number(opt.value).toLocaleString() + " 건";
+        });
     });
 
     instances[elementId] = table;
