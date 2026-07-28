@@ -13,6 +13,12 @@ public class HomeController {
         return "index";
     }
 
+    @GetMapping("/index2")
+    public String index2(Model model) {
+        model.addAttribute("message", "Thymeleaf is working!");
+        return "index2";
+    }
+
     @GetMapping("/dashboard-charts")
     public String dashboardCharts(Model model) {
         return "dashboard-charts";
