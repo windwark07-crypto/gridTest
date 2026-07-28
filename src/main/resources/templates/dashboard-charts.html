@@ -58,7 +58,8 @@
     font-size:12px;
     color:var(--text-sub);
   }
-  /* 래퍼 없이 canvas 단독 사용 (크기는 canvas width/height 속성으로 지정) */
+  /* 넓은 차트를 카드 폭 안에서 가로 스크롤로 표시 */
+  .chart-scroll{ overflow-x:auto; overflow-y:hidden; }
   #stackedChart{ display:block; }
   .footer-row{
     display:flex;
@@ -99,6 +100,41 @@
   }
   .seg-item .label{ display:flex; align-items:center; gap:7px; }
   .seg-item .value{ color:var(--text-sub); }
+
+  /* ---- 노출 범례 select 드롭다운 ---- */
+  .legend-select{ display:flex; align-items:center; gap:8px; }
+  .legend-select-label{ font-size:12px; color:var(--text-sub); }
+  .legend-dropdown{ position:relative; }
+  .legend-dropdown-btn{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    min-width:140px; padding:7px 11px;
+    border:1px solid #e3e3e6; border-radius:8px;
+    background:#fff; font-size:12px; color:var(--text-main); cursor:pointer;
+  }
+  .legend-dropdown-btn .caret{ color:var(--text-sub); font-size:10px; }
+  .legend-menu{
+    position:absolute; right:0; top:calc(100% + 6px);
+    min-width:170px; padding:6px;
+    background:#fff; border:1px solid #eee; border-radius:12px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.12);
+    display:none; z-index:20;
+  }
+  .legend-menu.open{ display:block; }
+  .legend-menu-item{
+    display:flex; align-items:center; gap:9px;
+    padding:9px 10px; border-radius:8px;
+    font-size:13px; color:var(--text-main); cursor:pointer;
+  }
+  .legend-menu-item:hover{ background:#f5f6f8; }
+  .legend-menu-item input{ width:15px; height:15px; accent-color:#3f5be0; cursor:pointer; }
+
+  /* ---- 하단 가로 범례 ---- */
+  .chart-legend{ display:flex; gap:16px; }
+  .chart-legend .item{
+    display:flex; align-items:center; gap:6px;
+    font-size:12px; color:var(--text-sub); cursor:pointer; user-select:none;
+  }
+  .chart-legend .item.off{ opacity:0.35; text-decoration:line-through; }
 </style>
 </head>
 <body>
@@ -106,13 +142,30 @@
 <!-- Chart 1: 시간대별 인증이용량 추이 (Stacked Bar) -->
 <div class="card">
   <div class="card-header">
-    <div class="card-title">시간대별 인증이용량 추이 <span class="badge">즉시결제 ▾</span></div>
-    <div class="card-sub">07.07 02:00 ~ 07.07 14:00 기준</div>
+    <div>
+      <div class="card-title">시간대별 인증이용량 추이 <span class="badge">즉시결제 ▾</span></div>
+      <div class="card-sub">07.06 13:00 ~ 07.07 13:00 기준</div>
+    </div>
+    <!-- 노출 범례 select 드롭다운 (체크리스트로 표시 여부 선택) -->
+    <div class="legend-select">
+      <span class="legend-select-label">노출 범례</span>
+      <div class="legend-dropdown">
+        <button type="button" class="legend-dropdown-btn" id="legendBtn">
+          <span id="legendBtnText">전체</span>
+          <span class="caret">▾</span>
+        </button>
+        <div class="legend-menu" id="legendMenu"><!-- 체크박스 항목은 JS로 생성 --></div>
+      </div>
+    </div>
   </div>
-  <canvas id="stackedChart" width="800" height="220"></canvas>
-  <!-- 범례는 차트 오른쪽에 Chart.js 내장 legend 로 표시 (클릭 시 토글) -->
+  <!-- 넓은 차트를 가로 스크롤로 표시 -->
+  <div class="chart-scroll">
+    <canvas id="stackedChart" width="1600" height="220"></canvas>
+  </div>
   <div class="footer-row">
     <span>오늘 (07.06)</span>
+    <!-- 하단 가로 범례 (JS로 생성) -->
+    <div class="chart-legend" id="chartLegend"></div>
   </div>
 </div>
 
@@ -174,53 +227,52 @@ const Y_MAX = Math.ceil(
   Math.max(...successData, ...failData, ...successDataPrev, ...failDataPrev) * 1.2 / 100
 ) * 100;
 
-common.CommonChart.create('stackedChart', {
+const stackedChart = common.CommonChart.create('stackedChart', {
   type: 'line',
   data: {
     labels: hours,
-    // 누적이 아니라 각각 0선부터 그려 앞뒤로 겹치게 표시한다.
-    // 값이 큰 '성공'을 먼저(뒤에), 작은 '실패'를 나중에(앞에) 그려야 둘 다 보인다.
+    // 채우기 없는 일반 line 차트 (선만 표시)
     datasets: [
       {
-        label: '성공',
+        label: '오늘성공',
         data: successData,
         borderColor: c('--success-active'),
-        backgroundColor: alpha(c('--success'), 0.8),
-        fill: 'origin',                 // 0선까지 채움
+        backgroundColor: c('--success-active'),
+        fill: false,
         tension: 0,
         borderWidth: 2,
         pointRadius: 0,
         pointHoverRadius: 5
       },
       {
-        label: '실패',
+        label: '오늘실패',
         data: failData,
         borderColor: c('--fail-active'),
-        backgroundColor: alpha(c('--fail'), 0.8),   // 채우기 색 (투명도 80%)
-        fill: 'origin',                 // 0선까지 채움 (누적 아님)
+        backgroundColor: c('--fail-active'),
+        fill: false,
         tension: 0,
         borderWidth: 2,
         pointRadius: 0,
         pointHoverRadius: 5
       },
-      // 1주일 전 비교 — 당일과 같은 형태(실선 + 영역 채우기), 색상만 연하게
+      // 1주일 전 비교 — 같은 형태(실선), 색상만 연하게
       {
-        label: '성공 (전 주)',
+        label: '전주성공',
         data: successDataPrev,
         borderColor: alpha(c('--success-active'), 0.5),
-        backgroundColor: alpha(c('--success'), 0.5),
-        fill: 'origin',
+        backgroundColor: alpha(c('--success-active'), 0.5),
+        fill: false,
         tension: 0,
         borderWidth: 2,
         pointRadius: 0,
         pointHoverRadius: 5
       },
       {
-        label: '실패 (전 주)',
+        label: '전주실패',
         data: failDataPrev,
         borderColor: alpha(c('--fail-active'), 0.5),
-        backgroundColor: alpha(c('--fail'), 0.5),
-        fill: 'origin',
+        backgroundColor: alpha(c('--fail-active'), 0.5),
+        fill: false,
         tension: 0,
         borderWidth: 2,
         pointRadius: 0,
@@ -239,31 +291,31 @@ common.CommonChart.create('stackedChart', {
         ticks:{
           color:'#8a8a8f',
           font:{size:11},
-          autoSkip: true,      // 24개 라벨이 겹치지 않도록 자동 생략
-          maxTicksLimit: 12,
+          autoSkip: true,      // 겹치면 자동 생략 (폭이 넓어 대부분 표시됨)
+          maxTicksLimit: 24,
           maxRotation: 0
         }
       },
       // stacked: false -> 누적하지 않고 각 값을 0선 기준으로 그린다
       // min/max 고정 -> 범례 토글로 dataset을 숨겨도 축이 재계산되지 않아 높이가 유지된다
-      y: { stacked: false, display:false, min: 0, max: Y_MAX }
+      y: {
+        stacked: false,
+        display: true,
+        min: 0,
+        max: Y_MAX,
+        border: { display: false },
+        grid: { color: '#f0f0f2' },
+        ticks: {
+          color: '#8a8a8f',
+          font: { size: 11 },
+          maxTicksLimit: 5,
+          callback: (v) => v.toLocaleString() + ' 건'   // 단위 표시
+        }
+      }
     },
     plugins: {
-      // 오른쪽 범례 — 항목 클릭 시 해당 데이터 노출/미노출 토글 (Chart.js 기본 동작)
-      legend: {
-        display: true,
-        position: 'right',
-        align: 'center',
-        labels: {
-          usePointStyle: true,
-          pointStyle: 'circle',
-          boxWidth: 8,
-          boxHeight: 8,
-          padding: 12,
-          color: '#8a8a8f',
-          font: { size: 11 }
-        }
-      },
+      // 내장 범례 사용 안 함 -> 우상단 select 드롭다운 + 하단 커스텀 범례로 대체
+      legend: { display: false },
       tooltip: {
         backgroundColor:'#fff',
         titleColor:'#1c1c1e',
@@ -284,6 +336,80 @@ common.CommonChart.create('stackedChart', {
     }
   }
 });
+
+/* ── 노출 범례 select 드롭다운 + 하단 범례 ──────────────────────── */
+(function setupLegendSelect() {
+  const legendBtn     = document.getElementById('legendBtn');
+  const legendBtnText = document.getElementById('legendBtnText');
+  const legendMenu    = document.getElementById('legendMenu');
+  const chartLegend   = document.getElementById('chartLegend');
+
+  // dataset 정보 (index, label, 색상)
+  const items = stackedChart.data.datasets.map((ds, i) => ({
+    index: i, label: ds.label, color: ds.borderColor
+  }));
+
+  const isVisible = (i) => stackedChart.isDatasetVisible(i);
+
+  // 버튼 텍스트: "오늘성공 외 3개" 형태
+  function updateBtnText() {
+    const on = items.filter(it => isVisible(it.index));
+    legendBtnText.textContent =
+      on.length === 0 ? '없음'
+      : on.length === 1 ? on[0].label
+      : `${on[0].label} 외 ${on.length - 1}개`;
+  }
+
+  // 하단 범례의 on/off 표시 동기화
+  function syncBottomLegend() {
+    chartLegend.querySelectorAll('.item').forEach(el => {
+      el.classList.toggle('off', !isVisible(Number(el.dataset.index)));
+    });
+  }
+
+  // dataset 표시/숨김 토글
+  function toggle(index, visible) {
+    stackedChart.setDatasetVisibility(index, visible);
+    stackedChart.update();
+    const cb = legendMenu.querySelector(`input[data-index="${index}"]`);
+    if (cb) cb.checked = visible;
+    updateBtnText();
+    syncBottomLegend();
+  }
+
+  // 드롭다운 체크박스 항목 생성
+  items.forEach(it => {
+    const label = document.createElement('label');
+    label.className = 'legend-menu-item';
+    label.innerHTML =
+      `<input type="checkbox" data-index="${it.index}" ${isVisible(it.index) ? 'checked' : ''}>` +
+      `<span>${it.label}</span>`;
+    label.querySelector('input')
+      .addEventListener('change', (e) => toggle(it.index, e.target.checked));
+    legendMenu.appendChild(label);
+  });
+
+  // 하단 가로 범례 생성 (클릭으로도 토글)
+  items.forEach(it => {
+    const el = document.createElement('span');
+    el.className = 'item';
+    el.dataset.index = it.index;
+    el.innerHTML = `<span class="dot" style="background:${it.color}"></span>${it.label}`;
+    el.addEventListener('click', () => toggle(it.index, !isVisible(it.index)));
+    chartLegend.appendChild(el);
+  });
+
+  // 드롭다운 열기/닫기
+  legendBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    legendMenu.classList.toggle('open');
+  });
+  legendMenu.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', () => legendMenu.classList.remove('open'));
+
+  updateBtnText();
+  syncBottomLegend();
+})();
 
 /* ============ Chart 2: Segmented bar, pure vanilla JS ============ */
 const segData = [
