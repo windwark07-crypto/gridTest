@@ -74,9 +74,10 @@ const instances = {};
 window.common.CommonGrid = {
   // formatter별 컬럼 기본 옵션 (컬럼에 직접 지정하지 않은 경우에만 주입)
   _formatterDefaults: {
-    image: { headerSort: false },
-    button: { headerSort: false },
-    checkbox: { headerSort: false }
+    image: { headerSort: false, headerHozAlign: "center"  },
+    button: { headerSort: false, headerHozAlign: "center"  },
+    checkbox: { headerHozAlign: "center",  hozAlign: "center" },
+    rowSelection: { headerSort: false, headerHozAlign: "center", hozAlign: "center", titleFormatter: "rowSelection", width: 40 }
   },
 
   /**
@@ -86,10 +87,22 @@ window.common.CommonGrid = {
   create(elementId, options) {
     instances[elementId]?.destroy();
 
+    // movableRows 사용 시 드래그 핸들 자동 추가.
+    // 단, rowHeader를 직접 지정했거나 columns에 rowHandle 컬럼을 이미 넣었으면 건너뛴다.
+    // (핸들을 특정 위치에 두고 싶을 때는 columns에 { rowHandle: true } 컬럼을 직접 배치)
+    const hasHandleColumn = Array.isArray(options.columns) && options.columns.some(function (c) { return c.rowHandle; });
+    if (options.movableRows && !options.rowHeader && !hasHandleColumn) {
+      options.rowHeader = { rowHandle: true, formatter: "handle", width: 30, resizable: false, headerSort: false, frozen: true };
+    }
+
     const table = new Tabulator('#' + elementId, {
       paginationSize: 100,                    // 페이지당 행 수 (기본 선택 = 100)
       paginationSizeSelector: [50, 100, 200], // 오른쪽 크기 선택 드롭다운 (50/100/200)
       paginationButtonCount: 5,               // 가운데 페이지 번호 버튼 개수 (1 2 3 4 5)
+      movableColumns: true,
+      columnDefaults: {
+        headerHozAlign: "center",
+      },
       locale: "ko-kr",
       langs: {
         "ko-kr": {
