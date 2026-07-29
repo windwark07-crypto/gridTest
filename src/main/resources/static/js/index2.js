@@ -18,7 +18,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 hozAlign: "center",
                 headerSort: false,
                 width: 40,
-                frozen: true 
+                frozen: true,
+                cssClass: "no-border-right"   // 우측 테두리 제거
             },
             { title: "ID", field: "id", width: 80 , frozen: true },
             {
