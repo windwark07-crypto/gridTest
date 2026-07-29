@@ -3,6 +3,38 @@ body {
     /* min-height: 100vh; */
 }
 
+/* 컬럼 우측 테두리 제거 (cssClass: "no-border-right") */
+.tabulator-cell.no-border-right {
+    border-right: none;
+}
+.tabulator-header .tabulator-col.no-border-right {
+    border-right: none !important;
+}
+
+/* 컬럼 배경 흰색 + 구분선 제거 (cssClass: "no-style") — 예: "선택" 컬럼 */
+.tabulator-cell.no-style {
+    background-color: #fff !important;   /* 줄무늬·선택·hover 배경 위에 흰색 */
+    border-right: none;
+}
+.tabulator-header .tabulator-col.no-style {
+    background-color: #fff !important;   /* 기본 회색 헤더 배경 덮기 */
+    border-right: none !important;
+}
+
+/* 헤더 위/아래 구분선을 "컨테이너" 대신 "컬럼별 border"로 그린다.
+   -> no-style 컬럼만 :not() 으로 선을 제외할 수 있게 됨.
+   (다른 컬럼은 동일하게 선이 보여서 기존과 같아 보임) */
+.tabulator {
+    border-top: none;
+}
+.tabulator .tabulator-header {
+    border-bottom: none;
+}
+.tabulator-header .tabulator-col:not(.no-style) {
+    border-top: 1px solid #999;
+    border-bottom: 1px solid #999;
+}
+
 /* editor: "list" 셀을 select box 모양으로 (테두리 박스 + 드롭다운 화살표) */
 .tabulator-cell.editable-list {
     background-color: #fff;

@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 hozAlign: "center",
                 width: 40,
                 cssClass: "no-style"
+                // headerSort: false,
             },
             {
                 // 행 이동 드래그 핸들 (2번째 컬럼)
