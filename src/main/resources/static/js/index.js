@@ -4,13 +4,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const table = CommonGrid.create("serviceGrid", {
         pagination:true,
         layout: "fitColumns",
-        // height: "400px",
-        width: "1000px",
+        movableRows: true,
+        //rowHeader: { rowHander: true, formatter: "handle", width: 30, resizable: false, headerSort: false, frozen: true},
         selectableRows: true,
-        // 모든 컬럼 헤더를 기본 가운데 정렬
-        columnDefaults: {
-            headerHozAlign: "center"
-        },
         columns: CommonGrid.columns([
             {
                 formatter: "rowSelection",
