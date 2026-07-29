@@ -9,7 +9,8 @@ document.addEventListener("DOMContentLoaded", function () {
         selectableRows: true,
         // 모든 컬럼 헤더를 기본 가운데 정렬
         columnDefaults: {
-            headerHozAlign: "center"
+            headerHozAlign: "center",
+            tooltip: true   // 셀에 마우스 오버 시 셀 값을 툴팁으로 표시
         },
         columns: CommonGrid.columns([
             {
@@ -33,7 +34,12 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             { title: "Name", field: "name", frozen: true , width: 200},
             { title: "Age", field: "age", editor: "number", editorParams: { min: 0, max: 150 } , width: 200},
-            { title: "MEMO", field: "memo", editor: "input", cssClass: "editable-input" ,width: 300},
+            { title: "MEMO", field: "memo", editor: "input", cssClass: "editable-input", width: 300,
+                tooltip: function (e, cell) {
+                    const d = cell.getRow().getData();
+                    return `${d.name} (ID:${d.id}) · MEMO: ${d.memo}`;
+                }
+            },
             {
                 title: "Status",
                 field: "status",
