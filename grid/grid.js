@@ -70,6 +70,7 @@ Tabulator.extendModule("format", "formatters", {
  * ──────────────────────────────────────────────────────────── */
 window.common = window.common || {};
 const instances = {};
+const resizeHandlers = {};   // fitHeight 옵션용 window.resize 핸들러 (재생성 시 누수 방지)
 
 window.common.CommonGrid = {
   // formatter별 컬럼 기본 옵션 (컬럼에 직접 지정하지 않은 경우에만 주입)
@@ -86,6 +87,18 @@ window.common.CommonGrid = {
    */
   create(elementId, options) {
     instances[elementId]?.destroy();
+
+    // 이전 인스턴스가 등록한 resize 핸들러 정리 (재생성 시 중복/누수 방지)
+    if (resizeHandlers[elementId]) {
+      window.removeEventListener("resize", resizeHandlers[elementId]);
+      delete resizeHandlers[elementId];
+    }
+
+    // fitHeight 는 Tabulator 옵션이 아니라 CommonGrid 전용 옵션이므로 분리 후 제거
+    //   fitHeight: true            -> 뷰포트 하단까지 그리드 높이를 채움
+    //   fitHeight: { bottomGap, minHeight }  -> 세부 조정
+    const fitHeight = options.fitHeight;
+    delete options.fitHeight;
 
     // movableRows 사용 시 드래그 핸들 자동 추가.
     // 단, rowHeader를 직접 지정했거나 columns에 rowHandle 컬럼을 이미 넣었으면 건너뛴다.
@@ -132,6 +145,23 @@ window.common.CommonGrid = {
           opt.textContent = Number(opt.value).toLocaleString() + " 건";
         });
     });
+
+    // fitHeight: 뷰포트 하단까지 그리드 높이를 채우고 창 크기 변경에 대응
+    if (fitHeight) {
+      const cfg = (typeof fitHeight === "object" && fitHeight) ? fitHeight : {};
+      const bottomGap = cfg.bottomGap != null ? cfg.bottomGap : 12;
+      const minHeight = cfg.minHeight != null ? cfg.minHeight : 150;
+      const fit = function () {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        const top = el.getBoundingClientRect().top;   // 뷰포트 상단 ~ 그리드 시작
+        const h = Math.max(window.innerHeight - top - bottomGap, minHeight);
+        table.setHeight(h);
+      };
+      table.on("tableBuilt", fit);       // 최초 렌더 후 1회
+      window.addEventListener("resize", fit);
+      resizeHandlers[elementId] = fit;   // 다음 재생성 시 제거용
+    }
 
     instances[elementId] = table;
     return table;
