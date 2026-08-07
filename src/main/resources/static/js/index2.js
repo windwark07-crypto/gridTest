@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const table = CommonGrid.create("serviceGrid", {
         pagination:true,
         layout: "fitData",
-        // height: "400px",
+        fitHeight: true,   // 뷰포트 하단까지 그리드 높이를 채움 (공통 처리, 창 크기 변경 대응)
         width: "1000px",
         selectableRows: true,
         // 모든 컬럼 헤더를 기본 가운데 정렬
