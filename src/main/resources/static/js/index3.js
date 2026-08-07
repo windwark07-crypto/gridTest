@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const CommonGrid = window.common.CommonGrid;
 
     const table = CommonGrid.create("serviceGrid", {
-        pagination:true,
+        pagination: false,   // 내장 페이징 사용 안 함 -> 커스텀 페이저가 API로 페이지 데이터 조회
         layout: "fitData",
         // height: "400px",
         width: "1000px",
@@ -55,12 +55,57 @@ document.addEventListener("DOMContentLoaded", function () {
                 width: 100
             },
         ]),
-        data: [
-            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
-            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
-            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
-        ],
+        data: [],   // 초기 데이터 없음 -> 커스텀 페이저가 API로 1페이지 조회해 채움
     });
+
+    // ── 커스텀 페이저 (pagination.js: common.CommonPagination) ───────────
+    let paging;   // 페이저 컨트롤러 (페이지 크기는 paging.getState().rowsPerPage 로 조회)
+
+    /**
+     * (모의) 서버 조회 API — 실제로는 아래를 fetch 로 교체:
+     *   fetch(`/api/services?page=${page}&size=${size}`).then(r => r.json())
+     * 반환 형식: { rows: [...현재 페이지 행...], total: 전체건수 }
+     */
+    function fetchServiceList(page, size) {
+        return new Promise(function (resolve) {
+            setTimeout(function () {   // 네트워크 지연 흉내
+                const start = (page - 1) * size;
+                resolve({
+                    rows: MOCK_SERVER_DATA.slice(start, start + size),
+                    total: MOCK_SERVER_DATA.length
+                });
+            }, 150);
+        });
+    }
+
+    // 페이지 로드: API 조회 -> 그리드 데이터 교체 -> 전체 건수만 전달(페이지 수 계산은 컴포넌트가)
+    function loadPage(page) {
+        const size = paging.getState().rowsPerPage;   // 컴포넌트가 들고 있는 현재 크기
+        fetchServiceList(page, size).then(function (res) {
+            table.replaceData(res.rows);   // 현재 페이지 데이터만 표시
+            paging.setTotalCount(res.total);   // 총 건수 -> 컴포넌트가 totalPages 계산
+        });
+    }
+
+    // 페이저 컴포넌트 생성 (페이지/크기 변경 시 API 재조회)
+    paging = common.CommonPagination.create("customPager", {
+        totalPages: 1,
+        currentPage: 1,
+        onPageChange: function (page) {
+            loadPage(page);
+        },
+        onRowsPerPageChange: function () {
+            // 크기 변경 시 1페이지로 이동 (loadPage가 최신 크기를 getState로 읽음)
+            if (paging.getState().currentPage !== 1) {
+                paging.setPage(1);   // setPage(1)이 onPageChange -> loadPage(1) 호출
+            } else {
+                loadPage(1);         // 이미 1페이지면 직접 로드
+            }
+        }
+    });
+
+    // 그리드 렌더 완료 후 1페이지 조회
+    table.on("tableBuilt", function () { loadPage(1); });
 
     // ── 툴바 버튼 ──────────────────────────────────────────────
     // 행 추가 (_state = "new")
@@ -99,3 +144,19 @@ function onDetailClick(e, cell) {
     console.log("상세 클릭:", rowData);
     alert("상세 보기 - ID: " + rowData.id + ", 이름: " + rowData.name);
 }
+
+// (모의) 서버 전체 데이터 — 실제 API 연동 시 삭제 (서버가 페이지별로 내려줌)
+const MOCK_SERVER_DATA = Array.from({ length: 23 }, function (_, i) {
+    const id = i + 1;
+    const names = ["Alice", "Bob", "Carol", "David", "Eve"];
+    return {
+        id: id,
+        name: names[i % names.length] + id,
+        photo: "https://i.pravatar.cc/40?img=" + ((i % 70) + 1),
+        age: 20 + (i * 3) % 50,
+        memo: "메모" + id,
+        status: i % 3 === 0 ? "Inactive" : "Active",
+        gender: i % 2 === 0 ? "01" : "02",
+        use: i % 2 === 0
+    };
+});
