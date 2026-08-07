@@ -424,6 +424,10 @@ const total = segData.reduce((s, d)=>s+d.value,0);
 
 // 툴팁 positioner 'segMiddle' 은 공통 모듈(grid/chart.js)에 등록되어 있음
 const lastIdx = segData.length - 1;
+
+// 마우스 오버한 세그먼트 index (null = 없음). 오버 시 나머지를 흐리게 표시하는 포커싱용
+let segHoverIdx = null;
+
 common.CommonChart.create('segChart', {
   type: 'bar',
   data: {
@@ -431,7 +435,9 @@ common.CommonChart.create('segChart', {
     datasets: segData.map((d, i) => ({
       label: d.name,
       data: [d.value],
-      backgroundColor: d.color,
+      // 오버 대상(또는 오버 없음)은 원색, 나머지는 흐리게 -> 포커싱 효과
+      backgroundColor: () =>
+        (segHoverIdx === null || segHoverIdx === i) ? d.color : alpha(d.color, 0.25),
       barThickness: 28,
       borderSkipped: false,
       // 전체 막대 양 끝만 둥글게 (첫 세그먼트=왼쪽, 마지막 세그먼트=오른쪽)
@@ -446,6 +452,14 @@ common.CommonChart.create('segChart', {
     // 크기는 canvas의 width/height 속성(584x100)을 그대로 사용
     responsive: false,
     layout: { padding: 0 },
+    // 마우스 오버한 세그먼트를 추적해 포커싱 (나머지 흐리게)
+    onHover: (evt, elements, chart) => {
+      const idx = elements.length ? elements[0].datasetIndex : null;
+      if (idx !== segHoverIdx) {
+        segHoverIdx = idx;
+        chart.update('none');   // 애니메이션 없이 즉시 반영
+      }
+    },
     scales: {
       x: { stacked: true, display: false, max: total }, // total로 폭 100% 고정
       y: { stacked: true, display: false }
