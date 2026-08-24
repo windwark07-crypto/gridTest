@@ -76,8 +76,8 @@ window.common.CommonPagination = {
       const actionEl = e.target.closest('[data-action]');
       if (actionEl) {
         const action = actionEl.dataset.action;
-        if (action === 'prev') setPage(state.currentPage - 1);
-        else if (action === 'next') setPage(state.currentPage + 1);
+        if (action === 'prev') setPage(prevBlockFirstPage());
+        else if (action === 'next') setPage(nextBlockFirstPage());
         else if (action === 'toggle-size') {
           e.stopPropagation();   // 열자마자 outside-click 으로 닫히는 것 방지
           state.sizeMenuOpen = !state.sizeMenuOpen;
@@ -109,15 +109,25 @@ window.common.CommonPagination = {
     }
 
     // ---- 내부 함수들 ----
+    // 현재 페이지가 속한 "블록"의 페이지 범위 (예: 1~5, 6~10, 11~15 …)
     function getVisiblePageRange() {
-      let start = Math.max(1, state.currentPage - Math.floor(state.maxVisiblePages / 2));
-      let end = start + state.maxVisiblePages - 1;
-
-      if (end > state.totalPages) {
-        end = state.totalPages;
-        start = Math.max(1, end - state.maxVisiblePages + 1);
-      }
+      const blockSize = state.maxVisiblePages;
+      const blockIndex = Math.floor((state.currentPage - 1) / blockSize);
+      const start = blockIndex * blockSize + 1;
+      const end = Math.min(start + blockSize - 1, state.totalPages);
       return { start, end };
+    }
+
+    // 다음/이전 블록의 첫 페이지 번호
+    function nextBlockFirstPage() {
+      const blockSize = state.maxVisiblePages;
+      const blockIndex = Math.floor((state.currentPage - 1) / blockSize);
+      return (blockIndex + 1) * blockSize + 1;   // 다음 블록 첫 페이지
+    }
+    function prevBlockFirstPage() {
+      const blockSize = state.maxVisiblePages;
+      const blockIndex = Math.floor((state.currentPage - 1) / blockSize);
+      return (blockIndex - 1) * blockSize + 1;    // 이전 블록 첫 페이지
     }
 
     function render() {
@@ -126,19 +136,22 @@ window.common.CommonPagination = {
 
       // 페이지 이동 영역
       const pagination = domHelper('div', 'pg-pagination');
+      const { start, end } = getVisiblePageRange();
+
+      // 이전 블록 버튼: 현재 블록의 첫 페이지가 1이면(=첫 블록) 비활성
       pagination.appendChild(
-        makeArrow('prev', state.currentPage === 1, '<', '이전 페이지')
+        makeArrow('prev', start === 1, '<', '이전 블록')
       );
 
-      const { start, end } = getVisiblePageRange();
       for (let p = start; p <= end; p++) {
         const btn = domHelper('button', 'pg-page' + (p === state.currentPage ? ' active' : ''), String(p));
         btn.dataset.page = p;
         pagination.appendChild(btn);
       }
 
+      // 다음 블록 버튼: 현재 블록의 마지막 페이지가 전체 페이지면(=마지막 블록) 비활성
       pagination.appendChild(
-        makeArrow('next', state.currentPage === state.totalPages, '>', '다음 페이지')
+        makeArrow('next', end === state.totalPages, '>', '다음 블록')
       );
       toolbar.appendChild(pagination);
 
