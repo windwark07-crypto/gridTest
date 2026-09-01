@@ -91,6 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
     paging = common.CommonPagination.create("customPager", {
         totalPages: 1,
         currentPage: 1,
+        hiddenRowsPerPage: [20],
         onPageChange: function (page) {
             loadPage(page);
         },

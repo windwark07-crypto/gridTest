@@ -7,7 +7,7 @@ window.common = window.common || {};
 
 /* 이 컴포넌트에 고정된 페이지 크기 설정 (create options 로 변경 불가) */
 const FIXED_ROWS_PER_PAGE_OPTIONS = Object.freeze([20, 50, 100]);
-const FIXED_DEFAULT_ROWS_PER_PAGE = 100;   // 초기 선택 크기 (FIXED_ROWS_PER_PAGE_OPTIONS 중 하나)
+const FIXED_DEFAULT_ROWS_PER_PAGE = 20;   // 초기 선택 크기 (FIXED_ROWS_PER_PAGE_OPTIONS 중 하나)
 
 /* ============================================================
  * common.CommonPagination
@@ -16,11 +16,12 @@ const FIXED_DEFAULT_ROWS_PER_PAGE = 100;   // 초기 선택 크기 (FIXED_ROWS_P
  *   const paging = common.CommonPagination.create('grid1', {
  *     totalPages: 12,
  *     currentPage: 1,
- *     rowsPerPageOptions: [20, 50, 100],
- *     rowsPerPage: 100,
+ *     hiddenRowsPerPage: [20],   // (선택) 드롭다운에서 숨길 건수. 예: 20건 미노출
  *     onPageChange(page) { ... },
  *     onRowsPerPageChange(size) { ... },
  *   });
+ *   // ※ 페이지 크기 목록/기본값은 pagination.js 상단 상수로 고정.
+ *   //    create options 로 목록 자체는 못 바꾸고, hiddenRowsPerPage 로 숨기기만 가능.
  *
  *   paging.setPage(3);
  *   paging.setTotalPages(20);
@@ -36,20 +37,33 @@ window.common.CommonPagination = {
    */
   create(elementId, options = {}) {
     const container = document.getElementById(elementId);
-
+console.log("ddddddddddddd")
     if (!container) {
       console.error(`[CommonPagination] element를 찾을 수 없습니다: #${elementId}`);
       return null;
     }
+
+    // 특정 건수를 드롭다운에서 숨김 (create options 로 지정)
+    //   예: create(id, { hiddenRowsPerPage: [20] }) -> 20건 옵션 미노출
+    const hiddenRowsPerPage = options.hiddenRowsPerPage ?? [];
+    const visibleRowsPerPageOptions = Object.freeze(
+      FIXED_ROWS_PER_PAGE_OPTIONS
+        .filter(function (size) { return !hiddenRowsPerPage.includes(size); })
+        .sort(function (a, b) { return a - b; })   // 항상 오름차순 (20, 50, 100)
+    );
+    // 기본 선택 크기가 숨김 대상이면, 보이는 첫 옵션으로 대체
+    const defaultRowsPerPage = hiddenRowsPerPage.includes(FIXED_DEFAULT_ROWS_PER_PAGE)
+      ? (visibleRowsPerPageOptions[0] ?? FIXED_DEFAULT_ROWS_PER_PAGE)
+      : FIXED_DEFAULT_ROWS_PER_PAGE;
 
     // ---- 내부 상태 (클로저로 캡슐화, 외부에서 직접 접근 불가) ----
     const state = {
       totalPages: options.totalPages ?? 1,
       totalCount: options.totalCount ?? 0,   // 전체 건수 (setTotalCount 로 갱신)
       currentPage: options.currentPage ?? 1,
-      // rowsPerPageOptions / rowsPerPage 는 이 컴포넌트에 고정 (create options 로 변경 불가)
-      rowsPerPageOptions: FIXED_ROWS_PER_PAGE_OPTIONS,
-      rowsPerPage: FIXED_DEFAULT_ROWS_PER_PAGE,
+      // 옵션 목록/기본값은 고정 세트에서 파생 (create options 로 세트 자체는 못 바꾸고, 숨김만 가능)
+      rowsPerPageOptions: visibleRowsPerPageOptions,
+      rowsPerPage: defaultRowsPerPage,
       maxVisiblePages: options.maxVisiblePages ?? 5,
       sizeMenuOpen: false,
     };
