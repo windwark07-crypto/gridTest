@@ -188,23 +188,25 @@ console.log("ddddddddddddd")
       );
       toolbar.appendChild(pagination);
 
-      // 페이지 크기 선택 영역
-      const sizeSelect = domHelper('div', 'pg-size-select' + (state.sizeMenuOpen ? ' open' : ''));
+      // 페이지 크기 옵션이 모두 숨겨진 경우 선택 영역 자체를 만들지 않음
+      if (state.rowsPerPageOptions.length > 0) {
+        const sizeSelect = domHelper('div', 'pg-size-select' + (state.sizeMenuOpen ? ' open' : ''));
 
-      const sizeBtn = domHelper('button', 'pg-size-btn');
-      sizeBtn.dataset.action = 'toggle-size';
-      sizeBtn.appendChild(domHelper('span', null, state.rowsPerPage + '건'));
-      sizeBtn.appendChild(domHelper('span', 'pg-size-caret', '▾'));   // 드롭다운 화살표 (텍스트)
-      sizeSelect.appendChild(sizeBtn);
+        const sizeBtn = domHelper('button', 'pg-size-btn');
+        sizeBtn.dataset.action = 'toggle-size';
+        sizeBtn.appendChild(domHelper('span', null, state.rowsPerPage + '건'));
+        sizeBtn.appendChild(domHelper('span', 'pg-size-caret', '▾'));   // 드롭다운 화살표 (텍스트)
+        sizeSelect.appendChild(sizeBtn);
 
-      const menu = domHelper('div', 'pg-size-menu');
-      state.rowsPerPageOptions.forEach(function (size) {
-        const opt = domHelper('div', 'pg-size-option' + (size === state.rowsPerPage ? ' selected' : ''), size + '건');
-        opt.dataset.size = size;
-        menu.appendChild(opt);
-      });
-      sizeSelect.appendChild(menu);
-      toolbar.appendChild(sizeSelect);
+        const menu = domHelper('div', 'pg-size-menu');
+        state.rowsPerPageOptions.forEach(function (size) {
+          const opt = domHelper('div', 'pg-size-option' + (size === state.rowsPerPage ? ' selected' : ''), size + '건');
+          opt.dataset.size = size;
+          menu.appendChild(opt);
+        });
+        sizeSelect.appendChild(menu);
+        toolbar.appendChild(sizeSelect);
+      }
 
       frag.appendChild(toolbar);
       container.replaceChildren(frag);   // 기존 내용 비우고 한 번에 교체
