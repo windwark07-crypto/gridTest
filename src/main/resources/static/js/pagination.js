@@ -36,6 +36,8 @@ window.common.CommonPagination = {
    * @returns {object} 인스턴스 컨트롤러 (setPage, setRowsPerPage, setTotalPages, getState, destroy)
    */
   create(elementId, options = {}) {
+    if (options === null || typeof options !== 'object' || Array.isArray(options)) options = {};
+
     const container = document.getElementById(elementId);
 console.log("ddddddddddddd")
     if (!container) {
@@ -45,7 +47,9 @@ console.log("ddddddddddddd")
 
     // 특정 건수를 드롭다운에서 숨김 (create options 로 지정)
     //   예: create(id, { hiddenRowsPerPage: [20] }) -> 20건 옵션 미노출
-    const hiddenRowsPerPage = options.hiddenRowsPerPage ?? [];
+    const hiddenRowsPerPage = Array.isArray(options.hiddenRowsPerPage)
+      ? options.hiddenRowsPerPage.filter(function (size) { return FIXED_ROWS_PER_PAGE_OPTIONS.includes(size); })
+      : [];
     const visibleRowsPerPageOptions = Object.freeze(
       FIXED_ROWS_PER_PAGE_OPTIONS
         .filter(function (size) { return !hiddenRowsPerPage.includes(size); })
@@ -56,21 +60,36 @@ console.log("ddddddddddddd")
       ? (visibleRowsPerPageOptions[0] ?? FIXED_DEFAULT_ROWS_PER_PAGE)
       : FIXED_DEFAULT_ROWS_PER_PAGE;
 
+    // 숫자 문자열은 변환하지 않음. 생성 시 잘못된 값은 기본값으로 대체하고,
+    // 공개 setter에 전달된 잘못된 값은 상태 변경/콜백 호출 없이 무시한다.
+    function isPositiveInteger(value) {
+      return Number.isSafeInteger(value) && value > 0;
+    }
+
+    function isValidTotalCount(value) {
+      return Number.isSafeInteger(value) && value >= 0;
+    }
+
+    const initialTotalPages = isPositiveInteger(options.totalPages) ? options.totalPages : 1;
+    const initialCurrentPage = isPositiveInteger(options.currentPage)
+      ? Math.min(options.currentPage, initialTotalPages)
+      : 1;
+
     // ---- 내부 상태 (클로저로 캡슐화, 외부에서 직접 접근 불가) ----
     const state = {
-      totalPages: options.totalPages ?? 1,
-      totalCount: options.totalCount ?? 0,   // 전체 건수 (setTotalCount 로 갱신)
-      currentPage: options.currentPage ?? 1,
+      totalPages: initialTotalPages,
+      totalCount: isValidTotalCount(options.totalCount) ? options.totalCount : 0,   // 전체 건수 (setTotalCount 로 갱신)
+      currentPage: initialCurrentPage,
       // 옵션 목록/기본값은 고정 세트에서 파생 (create options 로 세트 자체는 못 바꾸고, 숨김만 가능)
       rowsPerPageOptions: visibleRowsPerPageOptions,
       rowsPerPage: defaultRowsPerPage,
-      maxVisiblePages: options.maxVisiblePages ?? 5,
+      maxVisiblePages: isPositiveInteger(options.maxVisiblePages) ? options.maxVisiblePages : 5,
       sizeMenuOpen: false,
     };
 
     const callbacks = {
-      onPageChange: options.onPageChange ?? (() => {}),
-      onRowsPerPageChange: options.onRowsPerPageChange ?? (() => {}),
+      onPageChange: typeof options.onPageChange === 'function' ? options.onPageChange : (() => {}),
+      onRowsPerPageChange: typeof options.onRowsPerPageChange === 'function' ? options.onRowsPerPageChange : (() => {}),
     };
 
     // ---- 바깥 클릭 시 드롭다운 닫기 (인스턴스별로 등록/해제) ----
@@ -193,13 +212,14 @@ console.log("ddddddddddddd")
 
     // ---- 외부에 노출할 API ----
     function setPage(page) {
-      if (page < 1 || page > state.totalPages || page === state.currentPage) return;
+      if (!isPositiveInteger(page) || page > state.totalPages || page === state.currentPage) return;
       state.currentPage = page;
       render();
       callbacks.onPageChange(page);
     }
 
     function setRowsPerPage(size) {
+      if (!state.rowsPerPageOptions.includes(size)) return;
       state.rowsPerPage = size;
       state.sizeMenuOpen = false;
       // 크기가 바뀌면 저장된 전체 건수 기준으로 totalPages 재계산
@@ -209,13 +229,15 @@ console.log("ddddddddddddd")
     }
 
     function setTotalPages(totalPages) {
+      if (!isPositiveInteger(totalPages)) return;
       state.totalPages = totalPages;
-      if (state.currentPage > totalPages) state.currentPage = totalPages || 1;
+      if (state.currentPage > totalPages) state.currentPage = totalPages;
       render();
     }
 
     // 전체 건수(totalCount)를 넣으면 rowsPerPage 기준으로 totalPages 를 계산해 반영
     function setTotalCount(totalCount) {
+      if (!isValidTotalCount(totalCount)) return;
       state.totalCount = totalCount;
       setTotalPages(calcTotalPages(totalCount, state.rowsPerPage));
     }
