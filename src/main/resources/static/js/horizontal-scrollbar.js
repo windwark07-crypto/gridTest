@@ -18,6 +18,7 @@ const HORIZONTAL_SCROLLBAR_REQUEST_FRAME = window.requestAnimationFrame || funct
   return setTimeout(callback, 0);
 };
 const HORIZONTAL_SCROLLBAR_CANCEL_FRAME = window.cancelAnimationFrame || clearTimeout;
+const HORIZONTAL_SCROLLBAR_BOTTOM_OFFSET = 4;
 
 window.common.CommonHorizontalScrollbar = {
 
@@ -211,7 +212,7 @@ window.common.CommonHorizontalScrollbar = {
       } else {
         scrollbar.style.position = 'fixed';
         const barHeight = scrollbar.offsetHeight || 16;
-        const viewportBottom = window.innerHeight - (options.bottomOffset || 0);
+        const viewportBottom = window.innerHeight - HORIZONTAL_SCROLLBAR_BOTTOM_OFFSET;
         let availableBottom = viewportBottom;
         if (bottomElement) {
           const bottomRect = bottomElement.getBoundingClientRect();
@@ -219,7 +220,7 @@ window.common.CommonHorizontalScrollbar = {
           if (bottomRect.width > 0 && bottomRect.height > 0
             && bottomStyle.display !== 'none'
             && bottomRect.top < viewportBottom && bottomRect.bottom > 0) {
-            availableBottom = Math.min(viewportBottom, bottomRect.top);
+            availableBottom = Math.min(viewportBottom, bottomRect.top - HORIZONTAL_SCROLLBAR_BOTTOM_OFFSET);
           }
         }
         const bottom = Math.min(
