@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const CommonGrid = window.common.CommonGrid;
+    const CommonHorizontalScrollbar = window.common.CommonHorizontalScrollbar;
+    const serviceGrid = document.getElementById("serviceGrid");
 
     const table = CommonGrid.create("serviceGrid", {
         pagination: false,   // 내장 페이징 사용 안 함 -> 커스텀 페이저가 API로 페이지 데이터 조회
@@ -106,7 +108,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // 그리드 렌더 완료 후 1페이지 조회
-    table.on("tableBuilt", function () { loadPage(1); });
+    table.on("tableBuilt", function () {
+        CommonHorizontalScrollbar.create(table, serviceGrid, {
+            position: "viewport",
+            excludeFrozen: false,
+            bottomElement: "#customPager"
+        });
+        loadPage(1);
+    });
 
     // ── 툴바 버튼 ──────────────────────────────────────────────
     // 행 추가 (_state = "new")

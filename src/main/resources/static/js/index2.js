@@ -1,10 +1,13 @@
-document.addEventListener("DOMContentLoaded", function () {
+﻿document.addEventListener("DOMContentLoaded", function () {
     const CommonGrid = window.common.CommonGrid;
 
     const table = CommonGrid.create("serviceGrid", {
-        pagination:true,
+        pagination: "local",
+        paginationSize: 20,
+        paginationSizeSelector: false,
+        paginationElement: document.getElementById("tabulatorPager"),
         layout: "fitData",
-        fitHeight: true,   // 뷰포트 하단까지 그리드 높이를 채움 (공통 처리, 창 크기 변경 대응)
+        // fitHeight: true,   // 뷰포트 하단까지 그리드 높이를 채움 (공통 처리, 창 크기 변경 대응)
         width: "1000px",
         selectableRows: true,
         // 모든 컬럼 헤더를 기본 가운데 정렬
@@ -86,9 +89,71 @@ document.addEventListener("DOMContentLoaded", function () {
             { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
             { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
             { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+                        { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+                        { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+                        { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+                        { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+                        { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+                        { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+                        { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+                        { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+                        { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
         ],
     });
 
+
+    let customPager = null;
+    function getTotalCount() {
+        return table.getData().length;
+    }
+
+    table.on("tableBuilt", function () {
+        const totalCount = getTotalCount();
+        customPager = window.common.CommonPagination.create("customPager", {
+            totalCount: totalCount,
+            totalPages: Math.max(Math.ceil(totalCount / 20), 1),
+            currentPage: table.getPage() || 1,
+            onPageChange: function (page) {
+                if (table.getPage() !== page) table.setPage(page);
+            },
+            onRowsPerPageChange: function (size) {
+                table.setPageSize(size);
+                table.setPage(1);
+            }
+        });
+
+        window.common.CommonHorizontalScrollbar.create(table, document.getElementById("serviceGrid"), {
+            position: "viewport", excludeFrozen: true,
+            bottomElement: "#customPager"
+        });
+    });
+
+    table.on("dataChanged", function () {
+        if (customPager) customPager.setTotalCount(getTotalCount());
+    });
+
+    table.on("pageLoaded", function (page) {
+        if (!customPager) return;
+        if (customPager.getState().currentPage !== page) customPager.setPage(page);
+    });
     // ── 툴바 버튼 ──────────────────────────────────────────────
     // 행 추가 (_state = "new")
     document.getElementById("btnAddRow").addEventListener("click", function () {

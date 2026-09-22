@@ -3,8 +3,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const table = CommonGrid.create("serviceGrid", {
         pagination:true,
-        layout: "fitColumns",
-        movableRows: true,
+        // layout: "fitColumns",
+        layout: "fitData",
+        width: "1000px",
+        // fitHeight: true, 
+        // movableRows: true,
         //rowHeader: { rowHander: true, formatter: "handle", width: 30, resizable: false, headerSort: false, frozen: true},
         selectableRows: true,
         columns: CommonGrid.columns([
@@ -71,7 +74,46 @@ document.addEventListener("DOMContentLoaded", function () {
             { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
             { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
             { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
+            { id: 1, name: "Alice", photo: "https://i.pravatar.cc/40?img=1", age: 12, memo: "메모1", status: "Active", gender: "01", use: true },
+            { id: 2, name: "Bob", photo: "https://i.pravatar.cc/40?img=2", age: 33, memo: "메모2", status: "Inactive", gender: "01", use: false },
+            { id: 3, name: "Carol", photo: "https://i.pravatar.cc/40?img=3", age: 50, memo: "메모3", status: "Active", gender: "02", use: true },
         ],
+    });
+
+    table.on("tableBuilt", function () {
+        window.common.CommonHorizontalScrollbar.create(table, document.getElementById("serviceGrid"), {
+            position: "viewport", excludeFrozen: false
+        });
     });
 
     // ── 툴바 버튼 ──────────────────────────────────────────────
