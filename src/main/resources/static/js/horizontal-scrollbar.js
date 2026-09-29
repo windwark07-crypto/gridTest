@@ -26,6 +26,7 @@ window.common.CommonHorizontalScrollbar = {
    * @param {object} table Tabulator table instance
    * @param {Element|string} root grid root element or selector
    * @param {object} options
+   * @param {Element|string} [options.layerElement] viewport scrollbar layer or selector
    * @returns {{refresh: function, destroy: function}|null}
    */
   create(table, root, options = {}) {
@@ -56,6 +57,18 @@ window.common.CommonHorizontalScrollbar = {
     }
     if (!bottomElement || typeof bottomElement.getBoundingClientRect !== 'function') {
       bottomElement = null;
+    }
+    let layerElement = options.layerElement;
+    if (typeof layerElement === 'string') {
+      try {
+        layerElement = document.querySelector(layerElement);
+      } catch (error) {
+        layerElement = null;
+      }
+    }
+    if (!layerElement || layerElement.nodeType !== 1
+      || typeof layerElement.getBoundingClientRect !== 'function') {
+      layerElement = null;
     }
     const originalStyles = {
       overflowX: holder.style.overflowX,
@@ -198,6 +211,17 @@ window.common.CommonHorizontalScrollbar = {
         }
       }
       scrollbar.style.display = scrollbarNeeded ? 'block' : 'none';
+      if (position === 'viewport' && layerElement) {
+        const layerZIndex = String(getComputedStyle(layerElement).zIndex || '').trim();
+        const layerZIndexNumber = /^-?\d+$/.test(layerZIndex) ? Number(layerZIndex) : NaN;
+        if (Number.isInteger(layerZIndexNumber)) {
+          scrollbar.style.zIndex = String(layerZIndexNumber + 1);
+        } else {
+          scrollbar.style.removeProperty('z-index');
+        }
+      } else {
+        scrollbar.style.removeProperty('z-index');
+      }
       if (!scrollbarNeeded) {
         scrollbar.scrollLeft = 0;
         holder.scrollLeft = 0;
@@ -264,6 +288,25 @@ window.common.CommonHorizontalScrollbar = {
       if (bottomElement) {
         resizeObserver.observe(bottomElement);
       }
+      if (layerElement) {
+        resizeObserver.observe(layerElement);
+      }
+    }
+
+    let mutationObserver = null;
+    if (typeof MutationObserver === 'function' && layerElement) {
+      try {
+        mutationObserver = new MutationObserver(refresh);
+      } catch (error) {
+        mutationObserver = null;
+      }
+    }
+    if (mutationObserver) {
+      try {
+        mutationObserver.observe(layerElement, { attributes: true, attributeFilter: ['class', 'style'] });
+      } catch (error) {
+        mutationObserver.disconnect();
+      }
     }
 
     // ---- 외부 API ----
@@ -280,6 +323,9 @@ window.common.CommonHorizontalScrollbar = {
       });
       if (resizeObserver) {
         resizeObserver.disconnect();
+      }
+      if (mutationObserver) {
+        mutationObserver.disconnect();
       }
       scrollbar.remove();
       holder.style.overflowX = originalStyles.overflowX;
