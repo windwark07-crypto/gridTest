@@ -291,6 +291,9 @@ window.common.CommonHorizontalScrollbar = {
     listen(holder, 'wheel', handleWheel, { passive: false });
     listen(window, 'resize', refresh);
     listen(window, 'scroll', refresh, { passive: true });
+    if (layerElement) {
+      listen(layerElement, 'scroll', refresh, { passive: true, capture: true });
+    }
     HORIZONTAL_SCROLLBAR_EVENTS.forEach(function (eventName) {
       if (table.on) {
         table.on(eventName, refresh);
