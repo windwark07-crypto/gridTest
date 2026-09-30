@@ -26,7 +26,10 @@ window.common.CommonHorizontalScrollbar = {
    * @param {object} table Tabulator table instance
    * @param {Element|string} root grid root element or selector
    * @param {object} options
-   * @param {Element|string} [options.layerElement] viewport scrollbar layer or selector; its visible .popup__bottom is used as a boundary
+   * @param {Element|string} [options.layerElement] DOM element or element id (optional # prefix); its visible .popup__bottom is used as a boundary
+   * @param {string} [options.scrollbarId] identifier for the generated scrollbar; whitespace is trimmed
+   * @example
+   * common.CommonHorizontalScrollbar.create(table, '#orders-grid', { scrollbarId: 'orders-scrollbar' });
    * @returns {{refresh: function, destroy: function}|null}
    */
   create(table, root, options = {}) {
@@ -60,11 +63,8 @@ window.common.CommonHorizontalScrollbar = {
     }
     let layerElement = options.layerElement;
     if (typeof layerElement === 'string') {
-      try {
-        layerElement = document.querySelector(layerElement);
-      } catch (error) {
-        layerElement = null;
-      }
+      const layerId = layerElement.trim().replace(/^#/, '');
+      layerElement = layerId ? document.getElementById(layerId) : null;
     }
     if (!layerElement || layerElement.nodeType !== 1
       || typeof layerElement.getBoundingClientRect !== 'function') {
@@ -73,6 +73,9 @@ window.common.CommonHorizontalScrollbar = {
     const popupBottom = layerElement && typeof layerElement.querySelector === 'function'
       ? layerElement.querySelector('.popup__bottom')
       : null;
+    const scrollbarId = typeof options.scrollbarId === 'string' && options.scrollbarId.trim()
+      ? options.scrollbarId.trim()
+      : (root.id ? root.id + '-horizontal-scrollbar' : null);
     const originalStyles = {
       overflowX: holder.style.overflowX,
       borderBottom: holder.style.borderBottom,
@@ -88,6 +91,10 @@ window.common.CommonHorizontalScrollbar = {
     const scrollbar = document.createElement('div');
     const spacer = document.createElement('div');
     scrollbar.className = 'common-horizontal-scrollbar';
+    if (scrollbarId) {
+      scrollbar.id = scrollbarId;
+      scrollbar.setAttribute('data-scrollbar-id', scrollbarId);
+    }
     scrollbar.setAttribute('role', 'scrollbar');
     scrollbar.setAttribute('aria-label', '가로 스크롤');
     scrollbar.tabIndex = 0;
