@@ -26,7 +26,7 @@ window.common.CommonHorizontalScrollbar = {
    * @param {object} table Tabulator table instance
    * @param {Element|string} root grid root element or selector
    * @param {object} options
-   * @param {Element|string} [options.layerElement] viewport scrollbar layer or selector
+   * @param {Element|string} [options.layerElement] viewport scrollbar layer or selector; its visible .popup__bottom is used as a boundary
    * @returns {{refresh: function, destroy: function}|null}
    */
   create(table, root, options = {}) {
@@ -70,6 +70,9 @@ window.common.CommonHorizontalScrollbar = {
       || typeof layerElement.getBoundingClientRect !== 'function') {
       layerElement = null;
     }
+    const popupBottom = layerElement && typeof layerElement.querySelector === 'function'
+      ? layerElement.querySelector('.popup__bottom')
+      : null;
     const originalStyles = {
       overflowX: holder.style.overflowX,
       borderBottom: holder.style.borderBottom,
@@ -238,7 +241,19 @@ window.common.CommonHorizontalScrollbar = {
         const barHeight = scrollbar.offsetHeight || 16;
         const viewportBottom = window.innerHeight - HORIZONTAL_SCROLLBAR_BOTTOM_OFFSET;
         let availableBottom = viewportBottom;
-        if (bottomElement) {
+        let popupBoundaryUsed = false;
+        if (popupBottom) {
+          const popupRect = popupBottom.getBoundingClientRect();
+          const popupStyle = getComputedStyle(popupBottom);
+          if (popupRect.width > 0 && popupRect.height > 0
+            && popupStyle.display !== 'none'
+            && popupRect.left < window.innerWidth && popupRect.right > 0
+            && popupRect.top < window.innerHeight && popupRect.bottom > 0) {
+            availableBottom = Math.min(viewportBottom, popupRect.top - HORIZONTAL_SCROLLBAR_BOTTOM_OFFSET);
+            popupBoundaryUsed = true;
+          }
+        }
+        if (!popupBoundaryUsed && bottomElement) {
           const bottomRect = bottomElement.getBoundingClientRect();
           const bottomStyle = getComputedStyle(bottomElement);
           if (bottomRect.width > 0 && bottomRect.height > 0
@@ -290,6 +305,9 @@ window.common.CommonHorizontalScrollbar = {
       }
       if (layerElement) {
         resizeObserver.observe(layerElement);
+      }
+      if (popupBottom) {
+        resizeObserver.observe(popupBottom);
       }
     }
 
