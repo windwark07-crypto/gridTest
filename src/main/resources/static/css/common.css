@@ -12,6 +12,14 @@ body {
     background: transparent;
     scrollbar-color: #999 transparent;
     z-index: 20;
+    outline: none;
+}
+.common-horizontal-scrollbar:focus,
+.common-horizontal-scrollbar:focus-visible,
+.common-horizontal-scrollbar:active {
+    outline: none;
+    border-color: transparent;
+    box-shadow: none;
 }
 .common-horizontal-scrollbar > div { height: 1px; }
 @supports selector(::-webkit-scrollbar) {

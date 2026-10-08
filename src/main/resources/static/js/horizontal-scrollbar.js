@@ -97,7 +97,7 @@ window.common.CommonHorizontalScrollbar = {
     }
     scrollbar.setAttribute('role', 'scrollbar');
     scrollbar.setAttribute('aria-label', '가로 스크롤');
-    scrollbar.tabIndex = 0;
+    scrollbar.tabIndex = -1;
     spacer.style.height = '1px';
     scrollbar.appendChild(spacer);
     (position === 'viewport' ? document.body : root).appendChild(scrollbar);
@@ -198,6 +198,10 @@ window.common.CommonHorizontalScrollbar = {
       syncHolderScroll();
     }
 
+    function handleFocus(event) {
+      event.currentTarget.blur();
+    }
+
     function layout() {
       frame = 0;
       if (destroyed) {
@@ -287,6 +291,7 @@ window.common.CommonHorizontalScrollbar = {
     }
 
     listen(scrollbar, 'scroll', syncScrollbarScroll);
+    listen(scrollbar, 'focus', handleFocus);
     listen(holder, 'scroll', syncHolderScroll);
     listen(holder, 'wheel', handleWheel, { passive: false });
     listen(window, 'resize', refresh);
