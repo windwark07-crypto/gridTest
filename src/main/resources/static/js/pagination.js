@@ -9,6 +9,17 @@ window.common = window.common || {};
 const FIXED_ROWS_PER_PAGE_OPTIONS = Object.freeze([20, 50, 100]);
 const FIXED_DEFAULT_ROWS_PER_PAGE = 20;   // 초기 선택 크기 (FIXED_ROWS_PER_PAGE_OPTIONS 중 하나)
 
+function syncGridFooterPosition() {
+  const fixedFooterList = document.querySelectorAll('.grid-footer.grid-footer--fixed');
+  if (!fixedFooterList.length) return;
+  fixedFooterList.forEach(function (footer) {
+    footer.style.left = `${-window.scrollX}px`;
+  });
+}
+window.addEventListener('scroll', syncGridFooterPosition, { passive: true });
+window.addEventListener('resize', syncGridFooterPosition);
+syncGridFooterPosition();
+
 /* ============================================================
  * common.CommonPagination
  * ------------------------------------------------------------
@@ -210,6 +221,7 @@ console.log("ddddddddddddd")
 
       frag.appendChild(toolbar);
       container.replaceChildren(frag);   // 기존 내용 비우고 한 번에 교체
+      syncGridFooterPosition();
     }
 
     // ---- 외부에 노출할 API ----
